@@ -7,7 +7,7 @@
   <%= csrf_meta_tags %>
 </head>
 <body>
-  
+
   <nav class="top-bar">
     <h1><a href="/">UMRBeta</a></h1>
 
@@ -32,14 +32,48 @@
   <%= yield %>
 
   <%= javascript_include_tag 'application' %>
-  
-  <%- if Rails.env.development? || Rails.env.test? -%> 
+  <%= javascript_include_tag 'https://sdk.scdn.co/spotify-player.js' %>
+
+  <script>
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    // You can now initialize Spotify.Player and use the SDK
+    const token = 'BQB-lRjAE8lmUYmTmX8thiU_Hs7X84ag87lwbzr0EZLmT2eyLukXlWM-3x3eU-_Lecjj2XrNpdMqydTo8gMjhD1QA4WeCK75Zu5EAE8RYTPHJviIZJT31uWJsHQ-SkSl43th4D-hqWOLOYOQB9dv7Dprkm0y9UXK2b_4z7-6UcD7Jld-da4';
+    const player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(token); }
+    });
+
+    // Error handling
+    player.addListener('initialization_error', ({ message }) => { console.error(message); });
+    player.addListener('authentication_error', ({ message }) => { console.error(message); });
+    player.addListener('account_error', ({ message }) => { console.error(message); });
+    player.addListener('playback_error', ({ message }) => { console.error(message); });
+
+    // Playback status updates
+    player.addListener('player_state_changed', state => { console.log(state); });
+
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+    });
+
+    // Not Ready
+    player.addListener('not_ready', ({ device_id }) => {
+      console.log('Device ID has gone offline', device_id);
+    });
+
+    // Connect to the player!
+    player.connect();
+    };
+  </script>
+
+  <%- if Rails.env.development? || Rails.env.test? -%>
     <%= javascript_tag do %>
       window.railsEnv = '<%= Rails.env %>'
     <%- end -%>
   <%- end -%>
   <%= javascript_pack_tag 'application' %>
-  
+
   <%= yield :extra_footer %>
 </body>
 </html>
